@@ -5,7 +5,6 @@ export type WikiEntry = {
   title: string;
   category: string;
   content: string;
-  hasPassword: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -14,12 +13,14 @@ export type WikiEntryInput = {
   title: string;
   category: string;
   content: string;
-  password?: string;
-  clearPassword?: boolean;
 };
 
 export function fetchWikiEntries(signal?: AbortSignal) {
   return apiRequest<WikiEntry[]>("/api/wiki", { signal });
+}
+
+export function fetchWikiEntry(id: number, signal?: AbortSignal) {
+  return apiRequest<WikiEntry>(`/api/wiki/${id}`, { signal });
 }
 
 export function createWikiEntry(input: WikiEntryInput) {
@@ -33,12 +34,6 @@ export function updateWikiEntry(id: number, input: WikiEntryInput) {
   return apiRequest<WikiEntry>(`/api/wiki/${id}`, {
     method: "PATCH",
     body: JSON.stringify(input),
-  });
-}
-
-export function revealWikiPassword(id: number) {
-  return apiRequest<{ password: string }>(`/api/wiki/${id}/reveal`, {
-    method: "POST",
   });
 }
 

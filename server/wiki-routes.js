@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { database } from "./database.js";
 import { HttpError } from "./http-error.js";
-import { decryptSecret, encryptSecret } from "./secrets.js";
 import { numericId, validateWikiEntry } from "./validation.js";
 
 export const wikiRouter = Router();
@@ -11,7 +10,6 @@ const wikiColumns = `
   title,
   category,
   content,
-  encrypted_password IS NOT NULL AS hasPassword,
   created_at AS createdAt,
   updated_at AS updatedAt
 `;
@@ -23,7 +21,7 @@ function findWikiEntry(id) {
   if (!row) {
     throw new HttpError(404, "Запись не найдена");
   }
-  return { ...row, hasPassword: Boolean(row.hasPassword) };
+  return row;
 }
 
 wikiRouter.get("/", (_request, response) => {
@@ -33,22 +31,21 @@ wikiRouter.get("/", (_request, response) => {
        ORDER BY updated_at DESC, id DESC`,
     )
     .all();
-  response.json(
-    rows.map((row) => ({ ...row, hasPassword: Boolean(row.hasPassword) })),
-  );
+  response.json(rows);
+});
+
+wikiRouter.get("/:id", (request, response) => {
+  response.json(findWikiEntry(numericId(request.params.id)));
 });
 
 wikiRouter.post("/", (request, response) => {
   const input = validateWikiEntry(request.body);
-  const encryptedPassword = input.password
-    ? encryptSecret(input.password)
-    : null;
   const result = database
     .prepare(
-      `INSERT INTO wiki_entries (title, category, content, encrypted_password)
-       VALUES (?, ?, ?, ?)`,
+      `INSERT INTO wiki_entries (title, category, content)
+       VALUES (?, ?, ?)`,
     )
-    .run(input.title, input.category, input.content, encryptedPassword);
+    .run(input.title, input.category, input.content);
   response.status(201).json(findWikiEntry(Number(result.lastInsertRowid)));
 });
 
@@ -56,16 +53,10 @@ wikiRouter.patch("/:id", (request, response) => {
   const id = numericId(request.params.id);
   findWikiEntry(id);
   const input = validateWikiEntry(request.body, true);
-  const encryptedPassword = input.clearPassword
-    ? null
-    : input.password
-      ? encryptSecret(input.password)
-      : undefined;
   const columns = {
     title: input.title,
     category: input.category,
     content: input.content,
-    encrypted_password: encryptedPassword,
   };
   const entries = Object.entries(columns).filter(([, value]) => value !== undefined);
 
@@ -79,18 +70,6 @@ wikiRouter.patch("/:id", (request, response) => {
       .run(...entries.map(([, value]) => value), id);
   }
   response.json(findWikiEntry(id));
-});
-
-wikiRouter.post("/:id/reveal", (request, response) => {
-  const id = numericId(request.params.id);
-  findWikiEntry(id);
-  const row = database
-    .prepare("SELECT encrypted_password AS password FROM wiki_entries WHERE id = ?")
-    .get(id);
-  if (!row.password) {
-    throw new HttpError(404, "У этой записи нет сохранённого пароля");
-  }
-  response.json({ password: decryptSecret(row.password) });
 });
 
 wikiRouter.delete("/:id", (request, response) => {

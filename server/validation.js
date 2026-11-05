@@ -20,6 +20,22 @@ function text(value, field, maxLength, { required = false } = {}) {
   return result;
 }
 
+function website(value) {
+  const result = text(value, "Ссылка", 2000);
+  if (!result) return "";
+  const normalized = /^https?:\/\//i.test(result) ? result : `https://${result}`;
+  let parsed;
+  try {
+    parsed = new URL(normalized);
+  } catch {
+    throw new HttpError(400, "Укажите корректную ссылку");
+  }
+  if (!["http:", "https:"].includes(parsed.protocol) || !parsed.hostname) {
+    throw new HttpError(400, "Ссылка должна использовать HTTP или HTTPS");
+  }
+  return parsed.toString();
+}
+
 export function taskDate(value) {
   if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
     throw new HttpError(400, "Дата должна быть в формате ГГГГ-ММ-ДД");
@@ -76,14 +92,27 @@ export function validateWikiEntry(body, partial = false) {
   if (!partial || "content" in body) {
     result.content = text(body.content, "Текст", 20000);
   }
-  if ("password" in body) {
-    result.password = text(body.password, "Пароль", 1000);
+  return result;
+}
+
+export function validatePasswordEntry(body, partial = false) {
+  assertObject(body);
+  const result = {};
+
+  if (!partial || "title" in body) {
+    result.title = text(body.title, "Название", 160, { required: true });
   }
-  if ("clearPassword" in body) {
-    if (typeof body.clearPassword !== "boolean") {
-      throw new HttpError(400, "Поле «clearPassword» должно быть boolean");
-    }
-    result.clearPassword = body.clearPassword;
+  if (!partial || "login" in body) {
+    result.login = text(body.login, "Логин", 320);
+  }
+  if (!partial || "url" in body) {
+    result.url = website(body.url);
+  }
+  if (!partial || "notes" in body) {
+    result.notes = text(body.notes, "Заметка", 5000);
+  }
+  if (!partial || "password" in body) {
+    result.password = text(body.password, "Пароль", 1000, { required: true });
   }
   return result;
 }

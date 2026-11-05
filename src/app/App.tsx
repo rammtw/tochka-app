@@ -1,7 +1,8 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "./layout/AppLayout";
+import { PasswordsPage } from "@/pages/passwords";
 import { TasksPage } from "@/pages/tasks";
-import { WikiPage } from "@/pages/wiki";
+import { WikiDocumentPage, WikiPage } from "@/pages/wiki";
 
 export function App() {
   return (
@@ -9,6 +10,8 @@ export function App() {
       <Route element={<AppLayout />}>
         <Route index element={<TasksPage />} />
         <Route path="wiki" element={<WikiPage />} />
+        <Route path="wiki/:id" element={<WikiDocumentPage />} />
+        <Route path="passwords" element={<PasswordsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

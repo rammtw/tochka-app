@@ -3,7 +3,6 @@ import {
   createWikiEntry,
   deleteWikiEntry,
   fetchWikiEntries,
-  revealWikiPassword,
   updateWikiEntry,
 } from "../api/wiki-api";
 import type { WikiEntry, WikiEntryInput } from "../api/wiki-api";
@@ -18,7 +17,6 @@ function errorMessage(error: unknown) {
 
 export function useWiki() {
   const [entries, setEntries] = useState<WikiEntry[]>([]);
-  const [passwords, setPasswords] = useState<Record<number, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -49,47 +47,20 @@ export function useWiki() {
   const editEntry = useCallback(async (id: number, input: WikiEntryInput) => {
     const entry = await updateWikiEntry(id, input);
     setEntries((current) => current.map((item) => item.id === id ? entry : item).sort(byUpdatedAt));
-    setPasswords((current) => {
-      const next = { ...current };
-      delete next[id];
-      return next;
-    });
-  }, []);
-
-  const revealPassword = useCallback(async (id: number) => {
-    const { password } = await revealWikiPassword(id);
-    setPasswords((current) => ({ ...current, [id]: password }));
-    return password;
-  }, []);
-
-  const hidePassword = useCallback((id: number) => {
-    setPasswords((current) => {
-      const next = { ...current };
-      delete next[id];
-      return next;
-    });
   }, []);
 
   const removeEntry = useCallback(async (id: number) => {
     await deleteWikiEntry(id);
     setEntries((current) => current.filter((entry) => entry.id !== id));
-    setPasswords((current) => {
-      const next = { ...current };
-      delete next[id];
-      return next;
-    });
   }, []);
 
   return {
     entries,
-    passwords,
     isLoading,
     error,
     setError,
     addEntry,
     editEntry,
-    revealPassword,
-    hidePassword,
     removeEntry,
     retry: () => void loadEntries(),
   };

@@ -18,14 +18,11 @@ export function WikiPage() {
   const [deleting, setDeleting] = useState(false);
   const {
     entries,
-    passwords,
     isLoading,
     error,
     setError,
     addEntry,
     editEntry,
-    revealPassword,
-    hidePassword,
     removeEntry,
     retry,
   } = useWiki();
@@ -35,7 +32,6 @@ export function WikiPage() {
     (category === "all" || entry.category === category) &&
     (!deferredSearch || `${entry.title} ${entry.category} ${entry.content}`.toLocaleLowerCase("ru").includes(deferredSearch)),
   );
-  const passwordCount = entries.filter((entry) => entry.hasPassword).length;
 
   async function handleSave(input: WikiEntryInput) {
     setSaving(true);
@@ -69,7 +65,7 @@ export function WikiPage() {
         <div>
           <span className="page-eyebrow">Личная база знаний</span>
           <h1>Всё важное — под рукой</h1>
-          <p>Заметки, инструкции и доступы в одном спокойном месте.</p>
+          <p>Заметки и инструкции в одном спокойном месте.</p>
         </div>
         <Button icon={<Icon name="plus" size={18} />} onClick={() => setFormEntry("new")}>Новая запись</Button>
       </header>
@@ -84,8 +80,7 @@ export function WikiPage() {
       <section className="wiki-summary" aria-label="Сводка базы знаний">
         <div><strong>{entries.length}</strong><span>{entries.length === 1 ? "запись" : "записей"}</span></div>
         <div><strong>{categories.length}</strong><span>категорий</span></div>
-        <div><strong>{passwordCount}</strong><span>с паролем</span></div>
-        <p><Icon name="lock" size={16} /> Пароли зашифрованы и скрыты по умолчанию</p>
+        <p><Icon name="book" size={16} /> Текстовые заметки и полезные материалы</p>
       </section>
 
       <div className="wiki-toolbar">
@@ -104,15 +99,7 @@ export function WikiPage() {
       ) : filteredEntries.length ? (
         <section className="wiki-grid" aria-label="Записи базы знаний">
           {filteredEntries.map((entry) => (
-            <WikiCard
-              key={entry.id}
-              entry={entry}
-              password={passwords[entry.id]}
-              onReveal={() => revealPassword(entry.id)}
-              onHide={() => hidePassword(entry.id)}
-              onEdit={() => setFormEntry(entry)}
-              onDelete={() => setDeletingEntry(entry)}
-            />
+            <WikiCard key={entry.id} entry={entry} onEdit={() => setFormEntry(entry)} onDelete={() => setDeletingEntry(entry)} />
           ))}
         </section>
       ) : entries.length ? (
@@ -129,7 +116,7 @@ export function WikiPage() {
           <div className="empty-state">
             <span className="empty-state__icon"><Icon name="book" size={28} /></span>
             <h3>Начните свою базу знаний</h3>
-            <p>Сохраните полезную заметку, инструкцию или доступ. Пароль всегда будет скрыт, пока вы не решите его показать.</p>
+            <p>Сохраните полезную заметку или инструкцию. Для логинов и паролей есть отдельное защищённое хранилище.</p>
             <Button variant="secondary" icon={<Icon name="plus" size={17} />} onClick={() => setFormEntry("new")}>Создать первую запись</Button>
           </div>
         </div>
@@ -139,7 +126,7 @@ export function WikiPage() {
         <WikiForm entry={formEntry === "new" ? undefined : formEntry} saving={saving} onSave={handleSave} onClose={() => !saving && setFormEntry(null)} />
       )}
       {deletingEntry && (
-        <ConfirmDialog title="Удалить запись?" description={`Запись «${deletingEntry.title}» и её сохранённый пароль будут удалены без возможности восстановления.`} loading={deleting} onConfirm={() => void handleDelete()} onClose={() => !deleting && setDeletingEntry(null)} />
+        <ConfirmDialog title="Удалить запись?" description={`Запись «${deletingEntry.title}» будет удалена без возможности восстановления.`} loading={deleting} onConfirm={() => void handleDelete()} onClose={() => !deleting && setDeletingEntry(null)} />
       )}
     </div>
   );

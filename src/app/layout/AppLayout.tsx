@@ -5,6 +5,7 @@ import type { IconName } from "@/shared/ui/Icon";
 const navigation: { to: string; label: string; icon: IconName }[] = [
   { to: "/", label: "Мой день", icon: "tasks" },
   { to: "/wiki", label: "База знаний", icon: "book" },
+  { to: "/passwords", label: "Пароли", icon: "lock" },
 ];
 
 export function AppLayout() {

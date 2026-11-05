@@ -40,4 +40,25 @@ database.exec(`
 
   CREATE INDEX IF NOT EXISTS wiki_entries_updated_index
     ON wiki_entries(updated_at DESC);
+
+  CREATE TABLE IF NOT EXISTS password_entries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    login TEXT NOT NULL DEFAULT '',
+    url TEXT NOT NULL DEFAULT '',
+    notes TEXT NOT NULL DEFAULT '',
+    encrypted_password TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS password_entries_updated_index
+    ON password_entries(updated_at DESC);
+
+  BEGIN IMMEDIATE;
+  INSERT INTO password_entries (title, notes, encrypted_password, created_at, updated_at)
+    SELECT title, 'Перенесено из базы знаний', encrypted_password, created_at, updated_at
+    FROM wiki_entries WHERE encrypted_password IS NOT NULL;
+  UPDATE wiki_entries SET encrypted_password = NULL WHERE encrypted_password IS NOT NULL;
+  COMMIT;
 `);

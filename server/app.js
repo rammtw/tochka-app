@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { config } from "./config.js";
 import { HttpError } from "./http-error.js";
+import { passwordRouter } from "./password-routes.js";
 import { taskRouter } from "./task-routes.js";
 import { wikiRouter } from "./wiki-routes.js";
 
@@ -24,6 +25,7 @@ app.get("/api/health", (_request, response) => {
 });
 app.use("/api/tasks", taskRouter);
 app.use("/api/wiki", wikiRouter);
+app.use("/api/passwords", passwordRouter);
 app.use("/api", (_request, _response, next) => {
   next(new HttpError(404, "API-метод не найден"));
 });
