@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { useAuth } from "@/shared/auth";
 import { Icon } from "@/shared/ui/Icon";
 import type { IconName } from "@/shared/ui/Icon";
 
@@ -9,6 +10,8 @@ const navigation: { to: string; label: string; icon: IconName }[] = [
 ];
 
 export function AppLayout() {
+  const { logout } = useAuth();
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -35,6 +38,10 @@ export function AppLayout() {
               <span>{item.label}</span>
             </NavLink>
           ))}
+          <button type="button" className="main-nav__link logout-link" onClick={() => void logout()}>
+            <Icon name="close" />
+            <span>Выйти</span>
+          </button>
         </nav>
 
         <div className="sidebar__footer">

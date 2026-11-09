@@ -54,6 +54,18 @@ function taskTime(value) {
   return value;
 }
 
+export function validateCredentials(body) {
+  assertObject(body);
+  const { username, password } = body;
+  if (
+    typeof username !== "string" || typeof password !== "string" ||
+    !username.trim() || !password || username.length > 320 || password.length > 1000
+  ) {
+    throw new HttpError(400, "Введите логин и пароль");
+  }
+  return { username: username.trim(), password };
+}
+
 export function validateTask(body, partial = false) {
   assertObject(body);
   const result = {};

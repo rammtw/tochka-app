@@ -1,0 +1,20 @@
+.login-page { display: grid; place-items: center; min-height: 100vh; padding: 30px 18px; background: radial-gradient(circle at 50% 0%, #e7eee2 0, transparent 42%), var(--background); }
+.login-card { width: min(100%, 420px); padding: 34px; border: 1px solid var(--border); border-radius: 22px; background: rgb(255 255 255 / 94%); box-shadow: 0 24px 70px rgb(36 56 45 / 10%); }
+.login-brand { display: flex; align-items: center; gap: 12px; padding-bottom: 28px; border-bottom: 1px solid var(--border); }
+.login-brand strong { display: block; font: 800 25px/1 "Manrope", sans-serif; letter-spacing: -1px; }
+.login-brand small { display: block; margin-top: 5px; color: var(--text-soft); font-size: 10px; letter-spacing: .5px; }
+.login-card__heading { padding: 30px 0 24px; text-align: center; }
+.login-card__icon { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto 17px; border-radius: 15px; background: var(--primary-light); color: var(--primary); }
+.login-card__heading h1 { margin-bottom: 8px; font-size: 26px; letter-spacing: -.8px; }
+.login-card__heading p { margin: 0; color: var(--text-soft); font-size: 13px; }
+.login-form { display: flex; flex-direction: column; gap: 18px; }
+.login-password { display: flex; align-items: center; border: 1px solid #dfe4dc; border-radius: 10px; background: #fcfdfb; }
+.login-password:focus-within { border-color: #7d9e8d; box-shadow: 0 0 0 3px rgb(49 92 76 / 8%); }
+.login-password input { border: 0; background: transparent; box-shadow: none !important; }
+.login-password .button { width: 36px; height: 36px; margin-right: 4px; }
+.login-form__submit { width: 100%; min-height: 46px; margin-top: 3px; }
+.login-card__note { display: flex; align-items: center; justify-content: center; gap: 5px; margin: 24px 0 0; color: #909a92; font-size: 10px; }
+
+@media (max-width: 480px) {
+  .login-card { padding: 26px 21px; }
+}

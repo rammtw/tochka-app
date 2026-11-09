@@ -55,6 +55,8 @@ h1, h2, h3 { font-family: "Manrope", "Segoe UI", sans-serif; }
 .sidebar__footer div > span { margin-top: 3px; color: var(--text-soft); font-size: 10px; }
 .storage-indicator { width: 7px; height: 7px; margin-top: 4px; border-radius: 50%; background: #6e9c6a; box-shadow: 0 0 0 4px #edf3e9; }
 .main-content { width: 100%; max-width: 1440px; margin: 0 auto; padding: 52px 56px 72px; }
+.logout-link { width: 100%; margin-top: 8px; border: 0; background: transparent; text-align: left; }
+.auth-loading { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 100vh; color: var(--text-soft); background: var(--background); font-size: 13px; }
 
 .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid transparent; border-radius: 11px; font-weight: 600; line-height: 1; transition: background .18s, border-color .18s, transform .18s, color .18s; }
 .button:active:not(:disabled) { transform: translateY(1px); }

@@ -2,6 +2,8 @@ import express from "express";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { config } from "./config.js";
+import { authRouter } from "./auth-routes.js";
+import { requireAuth } from "./auth-service.js";
 import { HttpError } from "./http-error.js";
 import { passwordRouter } from "./password-routes.js";
 import { taskRouter } from "./task-routes.js";
@@ -23,6 +25,8 @@ app.use(express.json({ limit: "64kb" }));
 app.get("/api/health", (_request, response) => {
   response.json({ status: "ok" });
 });
+app.use("/api/auth", authRouter);
+app.use("/api", requireAuth);
 app.use("/api/tasks", taskRouter);
 app.use("/api/wiki", wikiRouter);
 app.use("/api/passwords", passwordRouter);

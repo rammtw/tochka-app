@@ -6,4 +6,7 @@ export const config = {
   dataDirectory: resolve(process.env.DATA_DIR ?? "data"),
   distDirectory: resolve("dist"),
   isProduction: process.env.NODE_ENV === "production",
+  authUsername: process.env.AUTH_USERNAME ?? "admin",
+  authPassword: process.env.AUTH_PASSWORD ?? "Tochka!2026",
+  cookieSecure: process.env.COOKIE_SECURE === "true",
 };
