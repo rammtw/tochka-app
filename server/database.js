@@ -64,6 +64,15 @@ database.exec(`
 
   CREATE INDEX IF NOT EXISTS sessions_expiry_index ON sessions(expires_at);
 
+  CREATE TABLE IF NOT EXISTS login_attempts (
+    ip_hash TEXT PRIMARY KEY,
+    failure_count INTEGER NOT NULL,
+    reset_at INTEGER NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS login_attempts_reset_index
+    ON login_attempts(reset_at);
+
   BEGIN IMMEDIATE;
   INSERT INTO password_entries (title, notes, encrypted_password, created_at, updated_at)
     SELECT title, 'Перенесено из базы знаний', encrypted_password, created_at, updated_at

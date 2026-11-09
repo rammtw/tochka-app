@@ -63,7 +63,6 @@ export function LoginPage() {
           {error && <div className="form-error" role="alert">{error}</div>}
           <Button className="login-form__submit" type="submit" loading={submitting}>Войти</Button>
         </form>
-        <p className="login-card__note"><Icon name="lock" size={13} /> Локальный доступ без регистрации</p>
       </section>
     </main>
   );

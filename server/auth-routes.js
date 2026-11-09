@@ -25,7 +25,7 @@ authRouter.get("/session", (request, response) => {
 });
 
 authRouter.post("/login", (request, response) => {
-  checkLoginRateLimit(request);
+  checkLoginRateLimit(request, response);
   const { username, password } = validateCredentials(request.body);
   if (!verifyCredentials(username, password)) {
     recordLoginFailure(request);

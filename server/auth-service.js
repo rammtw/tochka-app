@@ -10,11 +10,10 @@ import { HttpError } from "./http-error.js";
 
 const SESSION_COOKIE = "tochka_session";
 const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000;
-const LOGIN_WINDOW = 15 * 60 * 1000;
-const LOGIN_ATTEMPTS = 5;
+const LOGIN_WINDOW = 120 * 60 * 1000;
+const LOGIN_ATTEMPTS = 3;
 const passwordSalt = randomBytes(16);
 const passwordHash = scryptSync(config.authPassword, passwordSalt, 64);
-const loginAttempts = new Map();
 
 function hashValue(value) {
   return createHash("sha256").update(value).digest();
@@ -95,29 +94,50 @@ export function destroySession(request, response) {
   });
 }
 
-export function checkLoginRateLimit(request) {
-  const key = request.ip ?? "unknown";
-  const record = loginAttempts.get(key);
-  if (!record) return;
-  if (record.resetAt <= Date.now()) {
-    loginAttempts.delete(key);
-    return;
-  }
-  if (record.count >= LOGIN_ATTEMPTS) {
-    throw new HttpError(429, "Слишком много попыток. Повторите через 15 минут");
-  }
+function loginAttemptKey(request) {
+  return hashValue(request.ip ?? "unknown").toString("hex");
+}
+
+export function checkLoginRateLimit(request, response) {
+  const now = Date.now();
+  database.prepare("DELETE FROM login_attempts WHERE reset_at <= ?").run(now);
+  const record = database
+    .prepare(
+      "SELECT failure_count AS failureCount, reset_at AS resetAt FROM login_attempts WHERE ip_hash = ?",
+    )
+    .get(loginAttemptKey(request));
+  if (!record || record.failureCount < LOGIN_ATTEMPTS) return;
+
+  const retryAfter = Math.max(1, Math.ceil((record.resetAt - now) / 1000));
+  const retryMinutes = Math.max(1, Math.ceil(retryAfter / 60));
+  response.set("Retry-After", String(retryAfter));
+  throw new HttpError(
+    429,
+    `Слишком много попыток.`,
+  );
 }
 
 export function recordLoginFailure(request) {
-  const key = request.ip ?? "unknown";
-  const current = loginAttempts.get(key);
-  const record = !current || current.resetAt <= Date.now()
-    ? { count: 0, resetAt: Date.now() + LOGIN_WINDOW }
-    : current;
-  record.count += 1;
-  loginAttempts.set(key, record);
+  const now = Date.now();
+  database
+    .prepare(
+      `INSERT INTO login_attempts (ip_hash, failure_count, reset_at)
+       VALUES (?, 1, ?)
+       ON CONFLICT(ip_hash) DO UPDATE SET
+         failure_count = CASE
+           WHEN login_attempts.reset_at <= ? THEN 1
+           ELSE login_attempts.failure_count + 1
+         END,
+         reset_at = CASE
+           WHEN login_attempts.reset_at <= ? THEN excluded.reset_at
+           ELSE login_attempts.reset_at
+         END`,
+    )
+    .run(loginAttemptKey(request), now + LOGIN_WINDOW, now, now);
 }
 
 export function clearLoginFailures(request) {
-  loginAttempts.delete(request.ip ?? "unknown");
+  database
+    .prepare("DELETE FROM login_attempts WHERE ip_hash = ?")
+    .run(loginAttemptKey(request));
 }
